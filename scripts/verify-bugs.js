@@ -40,22 +40,34 @@ try {
   const paymentRoutesPath = join(projectRoot, "src/routes/payment.routes.js");
   const content = readFileSync(paymentRoutesPath, "utf-8");
 
-  // Check that there's NO check for maximum amount in validation section
-  // But the comment about it should be there
-  const hasMaxCheck = /if\s*\(\s*amount\s*>\s*\d+/.test(content);
-  const hasBugComment =
-    content.includes("BUG B:") ||
-    content.includes("Missing: if (amount > 50000)");
+  // Look for actual if statement checking max amount (not in comments)
+  // Match pattern: amount > 50000 or amount > MAX_AMOUNT as actual code
+  const lines = content.split("\n");
+  let hasActualMaxCheck = false;
 
-  if (!hasMaxCheck && hasBugComment && content.includes("amount <= 0")) {
+  for (const line of lines) {
+    // Skip comment lines
+    if (line.trim().startsWith("//")) continue;
+    // Check if line has actual validation code
+    if (
+      /if\s*\([^)]*amount\s*>\s*\d+/.test(line) ||
+      /if\s*\([^)]*amount\s*<\s*\d+/.test(line)
+    ) {
+      hasActualMaxCheck = true;
+      break;
+    }
+  }
+
+  const hasBugComment = content.includes("BUG B:");
+  const hasMinCheck = content.includes("amount <= 0");
+
+  if (!hasActualMaxCheck && hasBugComment && hasMinCheck) {
     console.log("✅ Bug B found: Missing maximum amount validation");
     bugsFound++;
-  } else if (hasMaxCheck) {
+  } else if (hasActualMaxCheck) {
     console.log("❌ Bug B already fixed: Maximum amount check is present");
   } else {
-    console.log(
-      "❌ Bug B missing: Should have comment indicating missing validation",
-    );
+    console.log("❌ Bug B missing: Should have validation bug");
   }
 } catch (err) {
   console.log("⚠️  Bug B: Cannot verify (file not found?)");
