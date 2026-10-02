@@ -10,7 +10,11 @@
     "test": "node --test src/**/*.test.js",
     "verify-bugs": "node scripts/verify-bugs.js"
   },
-  "keywords": ["eupay", "qa", "testing"],
+  "keywords": [
+    "eupay",
+    "qa",
+    "testing"
+  ],
   "author": "EU Pay",
   "license": "UNLICENSED",
   "dependencies": {
@@ -18,7 +22,9 @@
     "cors": "^2.8.5",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "socket.io": "^4.7.2",
+    "axios": "^1.6.2"
   },
   "devDependencies": {
     "supertest": "^6.3.4"
