@@ -22,14 +22,15 @@ router.post('/payment-status', (req, res) => {
     // Real systems MUST verify webhook signatures to prevent spoofing
     // Missing validation below:
     
-    // const expectedSignature = crypto
-    //   .createHmac('sha256', WEBHOOK_SECRET)
-    //   .update(JSON.stringify(req.body))
-    //   .digest('hex');
-    // 
-    // if (signature !== expectedSignature) {
-    //   return res.status(401).json({ error: 'Invalid signature' });
-    // }
+    const expectedSignature = crypto
+      .createHmac('sha256', WEBHOOK_SECRET)
+      .update(JSON.stringify(req.body))
+      .digest('hex');
+    console.log(expectedSignature, signature);
+    
+    if (signature !== expectedSignature) {
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
 
     if (!payment_id || !status) {
       return res.status(400).json({ error: 'payment_id and status required' });
@@ -39,9 +40,9 @@ router.post('/payment-status', (req, res) => {
     // Webhooks can be delivered multiple times - must be idempotent
     // Missing check below:
     
-    // if (db.processed_webhooks.includes(event_id)) {
-    //   return res.status(200).json({ message: 'Already processed' });
-    // }
+    if (db.processed_webhooks.includes(event_id)) {
+      return res.status(200).json({ message: 'Already processed' });
+    }
 
     const payment = getPaymentById(payment_id);
     if (!payment) {
@@ -53,7 +54,7 @@ router.post('/payment-status', (req, res) => {
     payment.webhook_received_at = new Date();
 
     // Mark webhook as processed (if idempotency was implemented)
-    // db.processed_webhooks.push(event_id);
+    db.processed_webhooks.push(event_id);
 
     res.status(200).json({
       success: true,
