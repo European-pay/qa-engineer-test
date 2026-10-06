@@ -107,6 +107,10 @@ httpServer.listen(PORT, () => {
   console.log(`✅ EU Pay QA Test API running on http://localhost:${PORT}`);
   console.log(`📖 Visit http://localhost:${PORT} for available endpoints`);
   console.log(`🔌 Socket.IO ready for real-time updates`);
+}).on('error', (err) => {
+  if (err.code !== 'EADDRINUSE') {
+    throw err;
+  }
 });
 
 export default app;
