@@ -1,5 +1,7 @@
 import express from "express";
 import { createServer } from "http";
+import { fileURLToPath } from "url";
+import path from "path";
 import { Server } from "socket.io";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes.js";
@@ -103,10 +105,15 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong!" });
 });
 
-httpServer.listen(PORT, () => {
-  console.log(`✅ EU Pay QA Test API running on http://localhost:${PORT}`);
-  console.log(`📖 Visit http://localhost:${PORT} for available endpoints`);
-  console.log(`🔌 Socket.IO ready for real-time updates`);
-});
+const __filename = fileURLToPath(import.meta.url);
 
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
+  httpServer.listen(PORT, () => {
+    console.log(`âœ… EU Pay QA Test API running on http://localhost:${PORT}`);
+    console.log(`ðŸ“– Visit http://localhost:${PORT} for available endpoints`);
+    console.log(`ðŸ”Œ Socket.IO ready for real-time updates`);
+  });
+}
+
+export { app, httpServer};
 export default app;
