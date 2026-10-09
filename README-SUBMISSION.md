@@ -1,0 +1,3 @@
+# QA Assignment Submission
+
+I started by reproducing all 7 bugs manually via Postman and writing targeted automated tests to catch regressions before applying minimal, targeted fixes across the route files. Getting the webhook signature verification and idempotency right took the most time since the in-memory database resets between server runs and required careful request sequencing. All 21 tests across 5 test suites are now passing cleanly with `node --test`. If I had more time, I'd move the webhook idempotency cache from an in-memory array to Redis with a TTL so it survives restarts, and add rate limiting across the auth and payment routes.
