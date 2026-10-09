@@ -12,21 +12,30 @@
           "name": "Register",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"newmerchant@test.com\",\n  \"password\": \"SecurePass123!\",\n  \"business_name\": \"My Test Business\"\n}"
             },
             "url": {
               "raw": "http://localhost:3000/api/auth/register",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register - Bad Email no TLD (should fail)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@nodomain\",\n  \"password\": \"Test123!\",\n  \"business_name\": \"Bad Email Co\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/auth/register",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
               "path": ["api", "auth", "register"]
             }
           }
@@ -48,21 +57,14 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"merchant@test.com\",\n  \"password\": \"Test123!\"\n}"
             },
             "url": {
               "raw": "http://localhost:3000/api/auth/login",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
               "path": ["api", "auth", "login"]
             }
           }
@@ -76,17 +78,10 @@
           "name": "Get All Payments",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
+            "header": [{ "key": "Authorization", "value": "Bearer {{auth_token}}" }],
             "url": {
               "raw": "http://localhost:3000/api/payments",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
               "path": ["api", "payments"]
             }
           }
@@ -95,17 +90,10 @@
           "name": "Get Payment by ID",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
+            "header": [{ "key": "Authorization", "value": "Bearer {{auth_token}}" }],
             "url": {
               "raw": "http://localhost:3000/api/payments/1",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
               "path": ["api", "payments", "1"]
             }
           }
@@ -115,79 +103,265 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"amount\": 50.00,\n  \"currency\": \"EUR\",\n  \"customer_email\": \"customer@example.com\"\n}"
-            },
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": 50.00,\n  \"currency\": \"EUR\",\n  \"customer_email\": \"customer@example.com\"\n}" },
             "url": {
               "raw": "http://localhost:3000/api/payments",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
               "path": ["api", "payments"]
             }
           }
         },
         {
-          "name": "Create Payment - Edge Case: Large Amount",
+          "name": "Create Payment - Large Amount (should fail)",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"amount\": 999999999,\n  \"currency\": \"EUR\",\n  \"customer_email\": \"customer@example.com\"\n}"
-            },
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": 999999999,\n  \"currency\": \"EUR\",\n  \"customer_email\": \"customer@example.com\"\n}" },
             "url": {
               "raw": "http://localhost:3000/api/payments",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
               "path": ["api", "payments"]
             }
           }
         },
         {
-          "name": "Create Payment - Negative Amount (Should Fail)",
+          "name": "Create Payment - Negative Amount (should fail)",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": -50.00,\n  \"currency\": \"EUR\",\n  \"customer_email\": \"customer@example.com\"\n}" },
+            "url": {
+              "raw": "http://localhost:3000/api/payments",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
+              "path": ["api", "payments"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "Payment Status - Fake Signature (should fail 401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-webhook-signature", "value": "thisisafakesignature" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"amount\": -50.00,\n  \"currency\": \"EUR\",\n  \"customer_email\": \"customer@example.com\"\n}"
+              "raw": "{\n  \"payment_id\": \"1\",\n  \"status\": \"completed\",\n  \"event_id\": \"evt_fake_001\"\n}"
             },
             "url": {
-              "raw": "http://localhost:3000/api/payments",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "payments"]
+              "raw": "http://localhost:3000/api/webhooks/payment-status",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
+              "path": ["api", "webhooks", "payment-status"]
+            }
+          }
+        },
+        {
+          "name": "Payment Status - Valid Signature",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// computes the HMAC so you don't have to do it manually",
+                  "const body = {",
+                  "    payment_id: '1',",
+                  "    status: 'completed',",
+                  "    event_id: 'evt_valid_' + Date.now()",
+                  "};",
+                  "const secret = 'test-webhook-secret-key';",
+                  "const bodyStr = JSON.stringify(body);",
+                  "const sig = CryptoJS.HmacSHA256(bodyStr, secret).toString();",
+                  "pm.environment.set('webhook_sig', sig);",
+                  "pm.environment.set('webhook_body', bodyStr);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-webhook-signature", "value": "{{webhook_sig}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{{webhook_body}}" },
+            "url": {
+              "raw": "http://localhost:3000/api/webhooks/payment-status",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
+              "path": ["api", "webhooks", "payment-status"]
+            }
+          }
+        },
+        {
+          "name": "Payment Status - Duplicate event_id (send twice to test idempotency)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// fixed event_id so sending this twice proves the second is skipped",
+                  "const body = {",
+                  "    payment_id: '1',",
+                  "    status: 'completed',",
+                  "    event_id: 'evt_duplicate_test_001'",
+                  "};",
+                  "const secret = 'test-webhook-secret-key';",
+                  "const bodyStr = JSON.stringify(body);",
+                  "const sig = CryptoJS.HmacSHA256(bodyStr, secret).toString();",
+                  "pm.environment.set('webhook_sig', sig);",
+                  "pm.environment.set('webhook_body', bodyStr);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-webhook-signature", "value": "{{webhook_sig}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{{webhook_body}}" },
+            "url": {
+              "raw": "http://localhost:3000/api/webhooks/payment-status",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
+              "path": ["api", "webhooks", "payment-status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Table Orders",
+      "item": [
+        {
+          "name": "Create Table Order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchant_id\": \"merchant_manual_test\",\n  \"table_number\": 5,\n  \"items\": [\n    { \"name\": \"Espresso\", \"price\": 2.50, \"quantity\": 1 }\n  ],\n  \"customer_name\": \"Test Customer\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/table-orders",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
+              "path": ["api", "table-orders"]
+            }
+          }
+        },
+        {
+          "name": "Create Duplicate Order Same Table (should fail 409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchant_id\": \"merchant_manual_test\",\n  \"table_number\": 5,\n  \"items\": [\n    { \"name\": \"Latte\", \"price\": 3.50, \"quantity\": 2 }\n  ],\n  \"customer_name\": \"Another Customer\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/table-orders",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
+              "path": ["api", "table-orders"]
+            }
+          }
+        },
+        {
+          "name": "Get All Table Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{auth_token}}" }],
+            "url": {
+              "raw": "http://localhost:3000/api/table-orders",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
+              "path": ["api", "table-orders"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "E-Invoice",
+      "item": [
+        {
+          "name": "Submit Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoice_id\": \"inv_manual_001\",\n  \"customer_siret\": \"12345678901234\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/einvoice/submit",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
+              "path": ["api", "einvoice", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Submit Same Invoice Again (should fail 409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoice_id\": \"inv_manual_001\",\n  \"customer_siret\": \"12345678901234\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/einvoice/submit",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
+              "path": ["api", "einvoice", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Check Invoice Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{auth_token}}" }],
+            "url": {
+              "raw": "http://localhost:3000/api/einvoice/status/inv_manual_001",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
+              "path": ["api", "einvoice", "status", "inv_manual_001"]
+            }
+          }
+        },
+        {
+          "name": "Submit Invoice - Invalid SIRET (should fail 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoice_id\": \"inv_manual_002\",\n  \"customer_siret\": \"123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/einvoice/submit",
+              "protocol": "http", "host": ["localhost"], "port": "3000",
+              "path": ["api", "einvoice", "submit"]
             }
           }
         }

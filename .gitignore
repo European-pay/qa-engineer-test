@@ -1,11 +1,21 @@
+# Dependencies
 node_modules/
-.DS_Store
+
+# Environment variables
 .env
+.env.local
+
+# Logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Candidate submissions (don't track these)
-bug-reports.md
-fixes.md
-test-plan.md
-submissions/
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+*/desktop.ini
+
+# Internal notes
+rules.md
