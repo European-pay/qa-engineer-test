@@ -45,6 +45,20 @@ router.post('/', (req, res) => {
     // Should check if table already has a pending order
     // Missing validation below:
     
+const existingOrder = (db.table_orders || []).find(
+  order =>
+    order.merchant_id === merchant_id &&
+    String(order.table_number) === String(table_number) &&
+    order.status === 'pending'
+);
+
+if (existingOrder) {
+  return res.status(409).json({
+    error: 'Table already has a pending order'
+  });
+}
+
+    
     // const existingOrder = (db.table_orders || []).find(
     //   o => o.merchant_id === merchant_id && 
     //        o.table_number === table_number && 

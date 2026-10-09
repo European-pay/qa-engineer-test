@@ -1,6 +1,11 @@
+
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { createPayment, getPayments, getPaymentById } from '../db/database.js';
+import {
+  createPayment,
+  getPayments,
+  getPaymentById
+} from '../db/database.js';
 
 const router = express.Router();
 
@@ -10,10 +15,10 @@ router.get('/', authenticate, (req, res) => {
     const merchantId = req.user.id;
     const payments = getPayments(merchantId);
 
-    // BUG A: Amount is being converted to string instead of remaining as number
+    // FIX A: Return payment amounts as numbers, not strings
     const formattedPayments = payments.map(p => ({
       id: p.id,
-      amount: p.amount.toString(), // ← BUG: Should be number, not string
+      amount: Number(p.amount),
       currency: p.currency,
       status: p.status,
       customer_email: p.customer_email,
@@ -49,7 +54,8 @@ router.get('/:id', authenticate, (req, res) => {
       success: true,
       data: {
         id: payment.id,
-        amount: payment.amount.toString(), // Same bug as above
+        // FIX A: Return the amount as a number
+        amount: Number(payment.amount),
         currency: payment.currency,
         status: payment.status,
         customer_email: payment.customer_email,
@@ -66,27 +72,47 @@ router.get('/:id', authenticate, (req, res) => {
 router.post('/', authenticate, (req, res) => {
   try {
     const { amount, currency, customer_email } = req.body;
+    const numericAmount = Number(amount);
 
-    // Validation
-    if (!amount || isNaN(amount) || amount <= 0) {
-      return res.status(400).json({ error: 'Valid amount is required' });
+    // Validate amount
+    if (
+      amount === undefined ||
+      amount === null ||
+      amount === '' ||
+      !Number.isFinite(numericAmount) ||
+      numericAmount <= 0
+    ) {
+      return res.status(400).json({
+        error: 'Valid amount is required'
+      });
     }
 
-    // BUG B: No maximum amount check - allows unrealistic amounts
-    // Real systems should have limits (e.g., max €50,000 per transaction)
-    // Missing: if (amount > 50000) { return 400 }
+    // FIX B: Enforce maximum transaction amount of €50,000
+    if (numericAmount > 50000) {
+      return res.status(400).json({
+        error: 'Payment amount cannot exceed 50000'
+      });
+    }
 
     if (!currency || !['EUR', 'USD', 'GBP'].includes(currency)) {
-      return res.status(400).json({ error: 'Valid currency is required (EUR, USD, GBP)' });
+      return res.status(400).json({
+        error: 'Valid currency is required (EUR, USD, GBP)'
+      });
     }
 
-    if (!customer_email || !customer_email.includes('@')) {
-      return res.status(400).json({ error: 'Valid customer email is required' });
+    if (
+      !customer_email ||
+      typeof customer_email !== 'string' ||
+      !customer_email.includes('@')
+    ) {
+      return res.status(400).json({
+        error: 'Valid customer email is required'
+      });
     }
 
     const payment = createPayment({
       merchant_id: req.user.id,
-      amount: parseFloat(amount),
+      amount: numericAmount,
       currency,
       customer_email,
       status: 'pending'
@@ -97,7 +123,7 @@ router.post('/', authenticate, (req, res) => {
       message: 'Payment created',
       data: {
         id: payment.id,
-        amount: payment.amount,
+        amount: Number(payment.amount),
         currency: payment.currency,
         status: payment.status,
         customer_email: payment.customer_email

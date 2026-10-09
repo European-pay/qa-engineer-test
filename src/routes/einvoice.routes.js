@@ -51,6 +51,16 @@ router.post('/submit', authenticate, async (req, res) => {
     // Should prevent submitting the same invoice twice
     // Missing validation below:
     
+if (
+  invoice.einvoice_status === 'submitted' ||
+  invoice.einvoice_status === 'accepted'
+) {
+  return res.status(409).json({
+    error: 'Invoice already submitted to tax authority'
+  });
+}
+
+    
     // if (invoice.einvoice_status === 'submitted' || invoice.einvoice_status === 'accepted') {
     //   return res.status(409).json({ 
     //     error: 'Invoice already submitted to tax authority' 

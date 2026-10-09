@@ -7,11 +7,15 @@ const router = express.Router();
 const JWT_SECRET = 'test-secret-key-do-not-use-in-production';
 
 // BUG C: Email validation is too permissive
+
 function validateEmail(email) {
-  // BUG: This regex allows emails without TLD like "user@domain"
-  const emailRegex = /^[^\s@]+@[^\s@]+$/;
-  return emailRegex.test(email);
+  if (typeof email !== 'string') {
+    return false;
+  }
+
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
+
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
