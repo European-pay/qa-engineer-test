@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { findUserById } from '../db/database.js';
+import { JWT_SECRET } from '../config.js';
 
-const JWT_SECRET = 'test-secret-key-do-not-use-in-production';
 
 export function authenticate(req, res, next) {
   try {
@@ -13,7 +13,7 @@ export function authenticate(req, res, next) {
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
     
     // Verify user still exists
     const user = findUserById(decoded.id);
