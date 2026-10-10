@@ -3,9 +3,10 @@ import assert from 'node:assert';
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { app } from '../../app.js';
-import { initDatabase } from '../../db/database.js';
+import { setupTestDatabase } from './test-setup.js';
 
-initDatabase();
+
+setupTestDatabase();
 
 /**
  * Payment Routes Tests
@@ -19,7 +20,7 @@ initDatabase();
  *   assert.strictEqual(typeof response.data[0].amount, 'number');
  * });
  */
-
+ 
 // - GET /payments returns amount as number
 test('GET/api/payments returns amount as a number',async () => {
   const token = jwt.sign(

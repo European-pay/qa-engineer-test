@@ -49,7 +49,7 @@ router.get('/:id', authenticate, (req, res) => {
       success: true,
       data: {
         id: payment.id,
-        amount: payment.amount, // Same bug as above
+        amount: payment.amount, 
         currency: payment.currency,
         status: payment.status,
         customer_email: payment.customer_email,
