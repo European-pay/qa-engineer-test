@@ -103,10 +103,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong!" });
 });
 
-httpServer.listen(PORT, () => {
-  console.log(`✅ EU Pay QA Test API running on http://localhost:${PORT}`);
-  console.log(`📖 Visit http://localhost:${PORT} for available endpoints`);
-  console.log(`🔌 Socket.IO ready for real-time updates`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  httpServer.listen(PORT, () => {
+    console.log(`✅ EU Pay QA Test API running on http://localhost:${PORT}`);
+    console.log(`📖 Visit http://localhost:${PORT} for available endpoints`);
+    console.log(`🔌 Socket.IO ready for real-time updates`);
+  });
+}
 
 export default app;
