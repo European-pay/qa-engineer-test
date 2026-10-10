@@ -1,27 +1,49 @@
-import { test } from 'node:test';
-import assert from 'node:assert';
+import { test, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
+import request from 'supertest';
+import app from '../../server.js';
+import { resetDatabase } from '../../db/database.js';
 
-/**
- * Auth Routes Tests
- * 
- * Candidates should add tests here for Bug C (email validation)
- * 
- * Example test structure:
- * 
- * test('should reject email without TLD', async () => {
- *   const result = validateEmail('user@domain');
- *   assert.strictEqual(result, false);
- * });
- */
+beforeEach(() => resetDatabase());
 
-test('placeholder test - candidates should add real tests', () => {
-  assert.ok(true);
+test('registration accepts a valid email and returns a token', async () => {
+  const response = await request(app).post('/api/auth/register').send({
+    email: 'new-merchant@example.com',
+    password: 'SecurePass123!',
+    business_name: 'Example Business'
+  });
+
+  assert.equal(response.status, 201);
+  assert.equal(response.body.user.email, 'new-merchant@example.com');
+  assert.ok(response.body.token);
 });
 
-// TODO: Add tests for:
-// - Valid email acceptance
-// - Invalid email rejection (no TLD, no @, etc.)
-// - Registration with valid data
-// - Registration with invalid email
-// - Login with correct credentials
-// - Login with incorrect credentials
+test('Bug C: registration rejects an email without a top-level domain', async () => {
+  const response = await request(app).post('/api/auth/register').send({
+    email: 'user@domain',
+    password: 'SecurePass123!',
+    business_name: 'Example Business'
+  });
+
+  assert.equal(response.status, 400);
+  assert.match(response.body.error, /email/i);
+});
+
+test('registration rejects malformed email addresses', async () => {
+  const response = await request(app).post('/api/auth/register').send({
+    email: 'not-an-email',
+    password: 'SecurePass123!',
+    business_name: 'Example Business'
+  });
+
+  assert.equal(response.status, 400);
+});
+
+test('login rejects incorrect credentials', async () => {
+  const response = await request(app).post('/api/auth/login').send({
+    email: 'merchant@test.com',
+    password: 'incorrect-password'
+  });
+
+  assert.equal(response.status, 401);
+});
