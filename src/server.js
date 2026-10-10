@@ -8,6 +8,7 @@ import { app } from './app.js';
 import { initDatabase } from "./db/database.js";
 
 
+console.log()
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
