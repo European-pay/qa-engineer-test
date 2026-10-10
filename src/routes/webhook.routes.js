@@ -1,89 +1,94 @@
-import express from 'express';
-import crypto from 'crypto';
-import { getPaymentById, db } from '../db/database.js';
+import express from "express";
+import crypto from "crypto";
+import { getPaymentById, db } from "../db/database.js";
 
 const router = express.Router();
 
 // Webhook secret for HMAC verification
-const WEBHOOK_SECRET = 'test-webhook-secret-key';
+const WEBHOOK_SECRET = "test-webhook-secret-key";
 
 /**
  * POST /api/webhooks/payment-status
- * 
+ *
  * Simulates external payment provider webhooks (like Powens)
  * Tests webhook signature verification and idempotency
  */
-router.post('/payment-status', (req, res) => {
+router.post("/payment-status", (req, res) => {
   try {
-    const signature = req.headers['x-webhook-signature'];
+    const signature = req.headers["x-webhook-signature"];
     const { payment_id, status, event_id } = req.body;
 
-    // BUG D: No signature verification
-    // Real systems MUST verify webhook signatures to prevent spoofing
-    // Missing validation below:
-    
-    // const expectedSignature = crypto
-    //   .createHmac('sha256', WEBHOOK_SECRET)
-    //   .update(JSON.stringify(req.body))
-    //   .digest('hex');
-    // 
-    // if (signature !== expectedSignature) {
-    //   return res.status(401).json({ error: 'Invalid signature' });
-    // }
-
-    if (!payment_id || !status) {
-      return res.status(400).json({ error: 'payment_id and status required' });
+    // Verify the webhook signature before processing the event.
+    if (typeof signature !== "string" || !/^[a-f0-9]{64}$/i.test(signature)) {
+      return res.status(401).json({ error: "Invalid signature" });
     }
 
-    // BUG E: No idempotency check
-    // Webhooks can be delivered multiple times - must be idempotent
-    // Missing check below:
-    
-    // if (db.processed_webhooks.includes(event_id)) {
-    //   return res.status(200).json({ message: 'Already processed' });
-    // }
+    const expectedSignature = crypto
+      .createHmac("sha256", WEBHOOK_SECRET)
+      .update(JSON.stringify(req.body))
+      .digest("hex");
+
+    const provided = Buffer.from(signature, "hex");
+    const expected = Buffer.from(expectedSignature, "hex");
+
+    if (!crypto.timingSafeEqual(provided, expected)) {
+      return res.status(401).json({ error: "Invalid signature" });
+    }
+
+    if (!payment_id || !status || !event_id) {
+      return res.status(400).json({
+        error: "payment_id, status, and event_id required",
+      });
+    }
+
+    if (db.processed_webhooks.includes(event_id)) {
+      return res.status(200).json({
+        success: true,
+        message: "Webhook already processed",
+        event_id,
+      });
+    }
 
     const payment = getPaymentById(payment_id);
     if (!payment) {
-      return res.status(404).json({ error: 'Payment not found' });
+      return res.status(404).json({ error: "Payment not found" });
     }
 
-    // Update payment status
     payment.status = status;
     payment.webhook_received_at = new Date();
 
-    // Mark webhook as processed (if idempotency was implemented)
-    // db.processed_webhooks.push(event_id);
+    // Record the event after successful processing.
+    db.processed_webhooks.push(event_id);
 
     res.status(200).json({
       success: true,
-      message: 'Webhook processed',
+      message: "Webhook processed",
       payment_id,
-      new_status: status
+      new_status: status,
     });
   } catch (error) {
-    console.error('Webhook error:', error);
-    res.status(500).json({ error: 'Webhook processing failed' });
+    console.error("Webhook error:", error);
+    res.status(500).json({ error: "Webhook processing failed" });
   }
 });
 
 /**
  * POST /api/webhooks/e-invoice
- * 
+ *
  * Simulates e-invoice submission webhook from tax authority
  */
-router.post('/e-invoice', (req, res) => {
+router.post("/e-invoice", (req, res) => {
   try {
     const { invoice_id, status, submission_id, tax_authority_id } = req.body;
 
     if (!invoice_id || !status) {
-      return res.status(400).json({ error: 'invoice_id and status required' });
+      return res.status(400).json({ error: "invoice_id and status required" });
     }
 
     // Find invoice in database
-    const invoice = db.invoices?.find(inv => inv.id === invoice_id);
+    const invoice = db.invoices?.find((inv) => inv.id === invoice_id);
     if (!invoice) {
-      return res.status(404).json({ error: 'Invoice not found' });
+      return res.status(404).json({ error: "Invoice not found" });
     }
 
     // Update invoice status
@@ -94,13 +99,13 @@ router.post('/e-invoice', (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'E-invoice webhook processed',
+      message: "E-invoice webhook processed",
       invoice_id,
-      status
+      status,
     });
   } catch (error) {
-    console.error('E-invoice webhook error:', error);
-    res.status(500).json({ error: 'E-invoice webhook failed' });
+    console.error("E-invoice webhook error:", error);
+    res.status(500).json({ error: "E-invoice webhook failed" });
   }
 });
 
