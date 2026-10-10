@@ -53,6 +53,102 @@ test('GET /api/payments/:id returns amount as a number', async () => {
   assert.equal(typeof response.body.data.amount, 'number');
 });
 
+// - POST /payments with valid data
+test('POST /api/payments accepts payment with valid amount', async () => {
+  const token = jwt.sign(
+    { id: '1', email: 'merchant@test.com', type: 'merchant' },
+    'test-secret-key-do-not-use-in-production'
+  );
+
+  const response = await request(app)
+    .post('/api/payments')
+    .set('Authorization', `Bearer ${token}`)
+    .send({
+      amount: 4999,
+      currency: 'EUR',
+      customer_email: 'customer@test.com'
+    });
+
+  assert.equal(response.status, 201);
+});
+
+// - POST /payments with negative amount (should fail)
+test('POST /api/payments rejects payment of negative amount', async () => {
+  const token = jwt.sign(
+    { id: '1', email: 'merchant@test.com', type: 'merchant' },
+    'test-secret-key-do-not-use-in-production'
+  );
+
+  const response = await request(app)
+    .post('/api/payments')
+    .set('Authorization', `Bearer ${token}`)
+    .send({
+      amount: -150,
+      currency: 'EUR',
+      customer_email: 'customer@test.com'
+    });
+
+  assert.equal(response.status, 400);
+});
+// - POST /payments with zero amount (should fail)
+test('POST /api/payments rejects payment if amount is zero', async () => {
+  const token = jwt.sign(
+    { id: '1', email: 'merchant@test.com', type: 'merchant' },
+    'test-secret-key-do-not-use-in-production'
+  );
+
+  const response = await request(app)
+    .post('/api/payments')
+    .set('Authorization', `Bearer ${token}`)
+    .send({
+      amount: 0,
+      currency: 'EUR',
+      customer_email: 'customer@test.com'
+    });
+
+  assert.equal(response.status, 400);
+});
+
+// - POST /payments with very large amount (> €50,000)
+test('POST /api/payments rejects amount above maximum limit', async () => {
+  const token = jwt.sign(
+    { id: '1', email: 'merchant@test.com', type: 'merchant' },
+    'test-secret-key-do-not-use-in-production'
+  );
+
+  const response = await request(app)
+    .post('/api/payments')
+    .set('Authorization', `Bearer ${token}`)
+    .send({
+      amount: 5000000,
+      currency: 'EUR',
+      customer_email: 'customer@test.com'
+    });
+
+  assert.equal(response.status, 400);
+});
+
+// - POST /payments without authentication
+test('POST /api/payments rejects payment if user authentication fails', async () => {
+  const token = jwt.sign(
+    { id: '7', email: 'merchant@test.com', type: 'merchant' },
+    'test-secret-key-do-not-use-in-production'
+  );
+
+  //invalid token: users.id = '7' doesn't exist in db
+  const response = await request(app)
+    .post('/api/payments')
+    .set('Authorization', `Bearer ${token}`)
+    .send({
+      amount: 200,
+      currency: 'EUR',
+      customer_email: 'customer@test.com'
+    });
+
+  assert.equal(response.status, 401);
+});
+
+
 // TODO: Add tests for:
 // - GET /payments returns amount as number
 // - GET /payments/:id returns amount as number

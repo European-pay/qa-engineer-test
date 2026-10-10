@@ -5,7 +5,7 @@ import { createPayment, getPayments, getPaymentById } from '../db/database.js';
 const router = express.Router();
 
 // GET /api/payments - List all payments for authenticated merchant
-router.get('/', authenticate, (req, res) => {
+router.get('/', authenticate, (req, res) => { 
   try {
     const merchantId = req.user.id;
     const payments = getPayments(merchantId);
@@ -13,7 +13,7 @@ router.get('/', authenticate, (req, res) => {
     
     const formattedPayments = payments.map(p => ({
       id: p.id,
-      amount: p.amount,// amount in db already stored in number, later if we move to PostgreSQL NUMERIC/DECIMAL columns comeback as strings, we had to convert it to original, but it will be done in db layer rather than route.
+      amount: p.amount,
       currency: p.currency,
       status: p.status,
       customer_email: p.customer_email,
@@ -68,13 +68,13 @@ router.post('/', authenticate, (req, res) => {
     const { amount, currency, customer_email } = req.body;
 
     // Validation
-    if (!amount || isNaN(amount) || amount <= 0) {
+    if (!amount || isNaN(amount) || amount <= 0 || amount > 5000) {
       return res.status(400).json({ error: 'Valid amount is required' });
     }
 
-    // BUG B: No maximum amount check - allows unrealistic amounts
-    // Real systems should have limits (e.g., max €50,000 per transaction)
-    // Missing: if (amount > 50000) { return 400 }
+    if (amount > 5000) {
+      return res.status(400).json({ error: 'Amount exceeds maximum limit' });
+    }
 
     if (!currency || !['EUR', 'USD', 'GBP'].includes(currency)) {
       return res.status(400).json({ error: 'Valid currency is required (EUR, USD, GBP)' });

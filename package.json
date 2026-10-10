@@ -27,6 +27,7 @@
     "uuid": "^14.0.2"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "supertest": "^6.3.4"
   }
 }
