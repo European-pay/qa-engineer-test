@@ -10,10 +10,10 @@ router.get('/', authenticate, (req, res) => {
     const merchantId = req.user.id;
     const payments = getPayments(merchantId);
 
-    // BUG A: Amount is being converted to string instead of remaining as number
+    
     const formattedPayments = payments.map(p => ({
       id: p.id,
-      amount: p.amount.toString(), // ← BUG: Should be number, not string
+      amount: p.amount,// amount in db already stored in number, later if we move to PostgreSQL NUMERIC/DECIMAL columns comeback as strings, we had to convert it to original, but it will be done in db layer rather than route.
       currency: p.currency,
       status: p.status,
       customer_email: p.customer_email,
@@ -49,7 +49,7 @@ router.get('/:id', authenticate, (req, res) => {
       success: true,
       data: {
         id: payment.id,
-        amount: payment.amount.toString(), // Same bug as above
+        amount: payment.amount, // Same bug as above
         currency: payment.currency,
         status: payment.status,
         customer_email: payment.customer_email,
