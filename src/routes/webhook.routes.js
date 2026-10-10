@@ -7,6 +7,15 @@ const router = express.Router();
 // Webhook secret for HMAC verification
 const WEBHOOK_SECRET = 'test-webhook-secret-key';
 
+function validSignature(signature, rawBody) {
+  if (typeof signature !== 'string' || !Buffer.isBuffer(rawBody) || !/^[a-f0-9]{64}$/i.test(signature)) return false;
+  const expected = crypto.createHmac('sha256', process.env.WEBHOOK_SECRET || WEBHOOK_SECRET)
+    .update(rawBody).digest();
+  const received = Buffer.from(signature, 'hex');
+  // timingSafeEqual requires equal-length buffers.
+  return received.length === expected.length && crypto.timingSafeEqual(received, expected);
+}
+
 /**
  * POST /api/webhooks/payment-status
  * 
@@ -16,32 +25,23 @@ const WEBHOOK_SECRET = 'test-webhook-secret-key';
 router.post('/payment-status', (req, res) => {
   try {
     const signature = req.headers['x-webhook-signature'];
-    const { payment_id, status, event_id } = req.body;
+    if (!validSignature(signature, req.rawBody)) {
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+    const { payment_id, status, event_id } = req.body || {};
 
-    // BUG D: No signature verification
-    // Real systems MUST verify webhook signatures to prevent spoofing
-    // Missing validation below:
-    
-    // const expectedSignature = crypto
-    //   .createHmac('sha256', WEBHOOK_SECRET)
-    //   .update(JSON.stringify(req.body))
-    //   .digest('hex');
-    // 
-    // if (signature !== expectedSignature) {
-    //   return res.status(401).json({ error: 'Invalid signature' });
-    // }
+    if (!payment_id || !status || typeof event_id !== 'string' || !event_id.trim()) {
+      return res.status(400).json({ error: 'payment_id, status, and event_id required' });
+    }
+    const normalizedEventId = event_id.trim();
 
-    if (!payment_id || !status) {
-      return res.status(400).json({ error: 'payment_id and status required' });
+    if (!['pending', 'completed', 'failed', 'cancelled', 'refunded'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid payment status' });
     }
 
-    // BUG E: No idempotency check
-    // Webhooks can be delivered multiple times - must be idempotent
-    // Missing check below:
-    
-    // if (db.processed_webhooks.includes(event_id)) {
-    //   return res.status(200).json({ message: 'Already processed' });
-    // }
+    if (db.processed_webhooks.includes(normalizedEventId)) {
+      return res.status(200).json({ success: true, message: 'Already processed', payment_id });
+    }
 
     const payment = getPaymentById(payment_id);
     if (!payment) {
@@ -52,8 +52,8 @@ router.post('/payment-status', (req, res) => {
     payment.status = status;
     payment.webhook_received_at = new Date();
 
-    // Mark webhook as processed (if idempotency was implemented)
-    // db.processed_webhooks.push(event_id);
+    // Record only after the payment update succeeds so unknown payments remain retryable.
+    db.processed_webhooks.push(normalizedEventId);
 
     res.status(200).json({
       success: true,
@@ -74,7 +74,7 @@ router.post('/payment-status', (req, res) => {
  */
 router.post('/e-invoice', (req, res) => {
   try {
-    const { invoice_id, status, submission_id, tax_authority_id } = req.body;
+    const { invoice_id, status, submission_id, tax_authority_id } = req.body || {};
 
     if (!invoice_id || !status) {
       return res.status(400).json({ error: 'invoice_id and status required' });

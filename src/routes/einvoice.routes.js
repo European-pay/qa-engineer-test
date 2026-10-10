@@ -11,10 +11,16 @@ const router = express.Router();
  */
 router.post('/submit', authenticate, async (req, res) => {
   try {
-    const { invoice_id, customer_siret } = req.body;
+    const { invoice_id, customer_siret } = req.body || {};
 
     if (!invoice_id) {
       return res.status(400).json({ error: 'invoice_id required' });
+    }
+
+    if (typeof customer_siret !== 'string' || !/^\d{14}$/.test(customer_siret)) {
+      return res.status(400).json({
+        error: 'Valid customer SIRET required for e-invoicing (14 digits)'
+      });
     }
 
     // Find or create invoice
@@ -40,22 +46,10 @@ router.post('/submit', authenticate, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    // Validate B2B requirement
-    if (!customer_siret || customer_siret.length !== 14) {
-      return res.status(400).json({ 
-        error: 'Valid customer SIRET required for e-invoicing (14 digits)' 
-      });
+    // Avoid creating a second tax-authority submission for an already submitted invoice.
+    if (['submitted', 'accepted'].includes(invoice.einvoice_status)) {
+      return res.status(409).json({ error: 'Invoice already submitted to tax authority' });
     }
-
-    // BUG G: No duplicate submission check
-    // Should prevent submitting the same invoice twice
-    // Missing validation below:
-    
-    // if (invoice.einvoice_status === 'submitted' || invoice.einvoice_status === 'accepted') {
-    //   return res.status(409).json({ 
-    //     error: 'Invoice already submitted to tax authority' 
-    //   });
-    // }
 
     // Simulate tax authority submission
     const submission_id = `SUB-${uuidv4()}`;
