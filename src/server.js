@@ -8,6 +8,8 @@ import webhookRoutes from "./routes/webhook.routes.js";
 import tableOrderRoutes from "./routes/table-order.routes.js";
 import einvoiceRoutes from "./routes/einvoice.routes.js";
 import { initDatabase } from "./db/database.js";
+import { fileURLToPath } from "url";
+import { resolve } from "path";
 
 const app = express();
 const httpServer = createServer(app);
@@ -22,7 +24,12 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({
+  verify(req, res, buffer) {
+    // Preserve the signed bytes; parsing and re-serializing JSON can change them.
+    req.rawBody = Buffer.from(buffer);
+  }
+}));
 
 // Initialize database
 initDatabase();
@@ -103,10 +110,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong!" });
 });
 
-httpServer.listen(PORT, () => {
-  console.log(`✅ EU Pay QA Test API running on http://localhost:${PORT}`);
-  console.log(`📖 Visit http://localhost:${PORT} for available endpoints`);
-  console.log(`🔌 Socket.IO ready for real-time updates`);
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  httpServer.listen(PORT, () => {
+    console.log(`✅ EU Pay QA Test API running on http://localhost:${PORT}`);
+    console.log(`📖 Visit http://localhost:${PORT} for available endpoints`);
+    console.log(`🔌 Socket.IO ready for real-time updates`);
+  });
+}
 
 export default app;
