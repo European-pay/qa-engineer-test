@@ -46,6 +46,13 @@ export function initDatabase() {
   console.log("📊 Database initialized with test data");
 }
 
+export function resetDatabase() {
+  for (const collection of Object.values(db)) {
+    collection.length = 0;
+  }
+  initDatabase();
+}
+
 // Helper to find user by email
 export function findUserByEmail(email) {
   return db.users.find((u) => u.email === email);
