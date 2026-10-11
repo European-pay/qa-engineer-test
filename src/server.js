@@ -29,7 +29,6 @@ io.on("connection", (socket) => {
   // Join merchant room for real-time updates
   socket.on("join_merchant", (merchantId) => {
     socket.join(`merchant_${merchantId}`);
-    console.log(`Merchant ${merchantId} joined room`);
   });
 
   // Join table room for order updates

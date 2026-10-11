@@ -68,11 +68,11 @@ router.post('/', authenticate, (req, res) => {
     const { amount, currency, customer_email } = req.body;
 
     // Validation
-    if (!amount || isNaN(amount) || amount <= 0 || amount > 5000) {
+    if (!amount || isNaN(amount) || amount <= 0) {
       return res.status(400).json({ error: 'Valid amount is required' });
     }
 
-    if (amount > 5000) {
+    if (amount > 50000) {
       return res.status(400).json({ error: 'Amount exceeds maximum limit' });
     }
 

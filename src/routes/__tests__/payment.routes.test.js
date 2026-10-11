@@ -65,7 +65,7 @@ test('POST /api/payments accepts payment with valid amount', async () => {
     .post('/api/payments')
     .set('Authorization', `Bearer ${token}`)
     .send({
-      amount: 4999,
+      amount: 50000,
       currency: 'EUR',
       customer_email: 'customer@test.com'
     });
@@ -73,6 +73,23 @@ test('POST /api/payments accepts payment with valid amount', async () => {
   assert.equal(response.status, 201);
 });
 
+test('POST /api/payments accepts payment with valid amount 2', async () => {
+  const token = jwt.sign(
+    { id: '1', email: 'merchant@test.com', type: 'merchant' },
+    'test-secret-key-do-not-use-in-production'
+  );
+
+  const response = await request(app)
+    .post('/api/payments')
+    .set('Authorization', `Bearer ${token}`)
+    .send({
+      amount: 5000,
+      currency: 'EUR',
+      customer_email: 'customer@test.com'
+    });
+
+  assert.equal(response.status, 201);
+});
 // - POST /payments with negative amount (should fail)
 test('POST /api/payments rejects payment of negative amount', async () => {
   const token = jwt.sign(
@@ -121,7 +138,7 @@ test('POST /api/payments rejects amount above maximum limit', async () => {
     .post('/api/payments')
     .set('Authorization', `Bearer ${token}`)
     .send({
-      amount: 5000000,
+      amount: 50000.01,
       currency: 'EUR',
       customer_email: 'customer@test.com'
     });
