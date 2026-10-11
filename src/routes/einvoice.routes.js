@@ -10,7 +10,7 @@ const router = express.Router();
  * Submit invoice to tax authority (Seqino PDP)
  */
 router.post('/submit', authenticate, async (req, res) => {
-  try {
+  try { 
     const { invoice_id, customer_siret } = req.body;
 
     if (!invoice_id) {
@@ -28,7 +28,7 @@ router.post('/submit', authenticate, async (req, res) => {
         amount: 100.00,
         currency: 'EUR',
         customer_siret,
-        status: 'draft',
+        status: 'submitted',
         created_at: new Date()
       };
       if (!db.invoices) db.invoices = [];
@@ -51,11 +51,11 @@ router.post('/submit', authenticate, async (req, res) => {
     // Should prevent submitting the same invoice twice
     // Missing validation below:
     
-    // if (invoice.einvoice_status === 'submitted' || invoice.einvoice_status === 'accepted') {
-    //   return res.status(409).json({ 
-    //     error: 'Invoice already submitted to tax authority' 
-    //   });
-    // }
+    if (invoice.einvoice_status === 'submitted' || invoice.einvoice_status === 'accepted') {
+      return res.status(409).json({ 
+        error: 'Invoice already submitted to tax authority' 
+      });
+    }
 
     // Simulate tax authority submission
     const submission_id = `SUB-${uuidv4()}`;
