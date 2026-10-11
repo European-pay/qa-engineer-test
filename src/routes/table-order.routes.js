@@ -8,7 +8,7 @@ const router = express.Router();
 /**
  * GET /api/table-orders
  * List all table orders for authenticated merchant
- */
+ */ 
 router.get('/', authenticate, (req, res) => {
   try {
     const merchantId = req.user.id;
@@ -45,14 +45,14 @@ router.post('/', (req, res) => {
     // Should check if table already has a pending order
     // Missing validation below:
     
-    // const existingOrder = (db.table_orders || []).find(
-    //   o => o.merchant_id === merchant_id && 
-    //        o.table_number === table_number && 
-    //        o.status === 'pending'
-    // );
-    // if (existingOrder) {
-    //   return res.status(409).json({ error: 'Table already has a pending order' });
-    // }
+    const existingOrder = (db.table_orders || []).find(
+      o => o.merchant_id === merchant_id && 
+           o.table_number === table_number && 
+           o.status === 'pending'
+    );
+    if (existingOrder) {
+      return res.status(409).json({ error: 'Table already has a pending order' });
+    }
 
     // Calculate total
     const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -74,8 +74,11 @@ router.post('/', (req, res) => {
     db.table_orders.push(newOrder);
 
     // Emit socket event (would be handled by socket.io)
-    // io.to(`merchant_${merchant_id}`).emit('new_order', newOrder);
 
+    if (typeof io !== 'undefined') {
+      io.to(`merchant_${merchant_id}`).emit('new_order', newOrder);
+    }
+    
     res.status(201).json({
       success: true,
       message: 'Table order created',
