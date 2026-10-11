@@ -57,6 +57,20 @@ router.post('/submit', authenticate, async (req, res) => {
     //   });
     // }
 
+    // Validate B2B requirement and exact 14-digit numeric format
+    if (!customer_siret || !/^\d{14}$/.test(customer_siret)) {
+      return res.status(400).json({ 
+        error: 'Valid 14-digit numeric customer SIRET required for e-invoicing' 
+      });
+    }
+
+    // fixed Prevent duplicate submissions to the tax authority 
+    if (invoice.einvoice_status === 'submitted' || invoice.einvoice_status === 'accepted') {
+      return res.status(409).json({ 
+        error: 'Invoice already submitted to tax authority' 
+      });
+    }
+
     // Simulate tax authority submission
     const submission_id = `SUB-${uuidv4()}`;
     invoice.einvoice_status = 'submitted';
