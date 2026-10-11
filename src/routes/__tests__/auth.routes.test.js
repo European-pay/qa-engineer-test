@@ -2,7 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert';
 import request from 'supertest';
 import { app } from '../../app.js';
-import bcrypt from 'bcryptjs';
 import { setupTestDatabase } from './test-setup.js';
 
 setupTestDatabase();
