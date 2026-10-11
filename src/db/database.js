@@ -2,7 +2,7 @@
 // In a real app, this would be PostgreSQL/MySQL
 
 export const db = {
-  users: [],
+  users: [], 
   payments: [],
   sessions: [],
   table_orders: [],
