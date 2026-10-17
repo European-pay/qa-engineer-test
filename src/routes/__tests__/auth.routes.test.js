@@ -1,27 +1,27 @@
-import { test } from 'node:test';
-import assert from 'node:assert';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import request from 'supertest';
+import app from '../../server.js';
 
-/**
- * Auth Routes Tests
- * 
- * Candidates should add tests here for Bug C (email validation)
- * 
- * Example test structure:
- * 
- * test('should reject email without TLD', async () => {
- *   const result = validateEmail('user@domain');
- *   assert.strictEqual(result, false);
- * });
- */
-
-test('placeholder test - candidates should add real tests', () => {
-  assert.ok(true);
+test('registration rejects an email without a top-level domain', async () => {
+  const response = await request(app).post('/api/auth/register').send({
+    email: 'user@domain', password: 'SecurePass123!', business_name: 'Example Co'
+  });
+  assert.equal(response.status, 400);
+  assert.equal(response.body.error, 'Invalid email format');
 });
 
-// TODO: Add tests for:
-// - Valid email acceptance
-// - Invalid email rejection (no TLD, no @, etc.)
-// - Registration with valid data
-// - Registration with invalid email
-// - Login with correct credentials
-// - Login with incorrect credentials
+test('registration accepts a valid email and returns a JWT', async () => {
+  const response = await request(app).post('/api/auth/register').send({
+    email: `valid-${Date.now()}@example.com`, password: 'SecurePass123!', business_name: 'Example Co'
+  });
+  assert.equal(response.status, 201);
+  assert.ok(response.body.token);
+});
+
+test('login rejects incorrect credentials', async () => {
+  const response = await request(app).post('/api/auth/login').send({
+    email: 'missing@example.com', password: 'WrongPass123!'
+  });
+  assert.equal(response.status, 401);
+});
